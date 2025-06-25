@@ -15,3 +15,8 @@ class ExchangeOrder(db.Model, SerializerMixin):
     status           = db.Column(Enum('pending','complete','cancelled', name='order_status'),
                                  default='pending', nullable=False)
     created_at       = db.Column(db.DateTime, default=datetime.utcnow)
+
+    serialize_rules = (
+        '-user',            
+        '-currency_pair',   
+    )

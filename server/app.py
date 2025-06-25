@@ -7,11 +7,14 @@ load_dotenv()
 from flask import jsonify, request, current_app
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_jwt_extended import create_access_token
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 
 # Import your factory and extensions
 from server.config import create_app, db
 from server.models.user import User
+from server.models.exchange_order import ExchangeOrder
+from server.models.currency_pair import CurrencyPair
+from decimal import Decimal
 
 # Import models and services using absolute paths
 from server.models.currency_pair import CurrencyPair
@@ -110,6 +113,66 @@ def login():
         "user": {"id": user.id, "email": user.email, "name": user.name},
         "token": token
     }), 200
+
+@app.route("/api/orders", methods=["POST"])
+@jwt_required()
+def create_order():
+    data = request.get_json()
+    pair_id = data.get("currency_pair_id")
+    raw_amount = data.get("amount")
+    direction = data.get("direction")
+    delivery = data.get("delivery_method")
+    user_id = get_jwt_identity()
+
+    if not all([pair_id, raw_amount, direction, delivery]):
+        return jsonify({"message": "All fields are required."}), 400
+
+
+    #validate enums
+    if direction not in ("buy", "sell"):
+        return jsonify({"message": "direction must be 'buy' or 'sell'."}), 400
+    if delivery not in ("branch_pickup", "bank_transfer"):
+        return jsonify ({"message": "delivery_method must be 'branch_pickup' or 'bank_transfer'."}), 400
+
+    try:
+        amount = Decimal(raw_amount)
+        if amount <= 0:
+            raise ValueError()
+    except:
+        return jsonify({"message": "amount must be a positive number."}), 400 
+
+    pair = CurrencyPair.query.get(pair_id)
+    if not pair:
+        return jsonify({"message": "CurrencyPair not found."}), 404 
+
+
+    #    For a buy order, user buys quote_currency, so use pair.sell_rate;
+    #    for sell order, user sells quote_currency, so use pair.buy_rate.
+    executed_rate = pair.sell_rate if direction == "buy" else pair.buy_rate 
+
+    #create the order and save it
+    order = ExchangeOrder(
+        user_id          = user_id,
+        currency_pair_id = pair_id,
+        amount           = amount,
+        direction        = direction,
+        delivery_method  = delivery,
+        rate_executed    = executed_rate,
+        status           = "pending"
+
+    )
+    db.session.add(order)
+    db.session.commit()
+
+    return jsonify(order.to_dict()), 201
+
+@app.route("/api/orders", methods=["GET"])
+@jwt_required()
+def list_orders():
+    user_id = get_jwt_identity()
+    orders = ExchangeOrder.query.filter_by(user_id=user_id).order_by(ExchangeOrder.created_at.desc()).all()
+    return jsonify([o.to_dict() for o in orders]), 200
+
 
 # Health check
 @app.route("/api/health", methods=["GET"])
