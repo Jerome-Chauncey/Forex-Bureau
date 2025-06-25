@@ -50,12 +50,12 @@ def create_app():
     # Import models AFTER db initialization
     with app.app_context():
         # Import model files without bringing names to global scope
-        import models.currency_pair
-        import models.exchange_order
-        import models.faq
-        import models.kyc_document
-        import models.rate_alert
-        import models.user
+        import server.models.currency_pair
+        import server.models.exchange_order
+        import server.models.faq
+        import server.models.kyc_document
+        import server.models.rate_alert
+        import server.models.user
 
     return app
 

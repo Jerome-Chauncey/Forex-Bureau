@@ -1,8 +1,7 @@
-from config import db 
+from server.config import db
 from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy import Enum
 from datetime import datetime
-
 
 class ExchangeOrder(db.Model, SerializerMixin):
     __tablename__ = 'exchange_orders'

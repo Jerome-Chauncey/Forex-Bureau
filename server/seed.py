@@ -17,8 +17,8 @@
 #         # Seed code goes here!
 
 # server/seed.py
-from config import create_app, db
-from models import CurrencyPair, FAQ
+from server.config import create_app, db
+from server.models import CurrencyPair, FAQ
 
 app = create_app()
 with app.app_context():
