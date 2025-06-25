@@ -125,6 +125,62 @@
         }
       },
       "response": []
+    },
+    {
+      "name": "Create Alert",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"currency_pair_id\": 1,\n  \"target_rate\": 1.2345\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5555/api/alerts",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5555",
+          "path": ["api", "alerts"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "List Alerts",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+        ],
+        "url": {
+          "raw": "http://localhost:5555/api/alerts",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5555",
+          "path": ["api", "alerts"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete Alert",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+        ],
+        "url": {
+          "raw": "http://localhost:5555/api/alerts/:alert_id",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5555",
+          "path": ["api", "alerts", ":alert_id"]
+        }
+      },
+      "response": []
     }
   ],
   "variable": [

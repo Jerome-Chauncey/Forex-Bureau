@@ -8,12 +8,14 @@ from flask import jsonify, request, current_app
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+# from flask_restful import Resource
 
 # Import your factory and extensions
 from server.config import create_app, db
 from server.models.user import User
 from server.models.exchange_order import ExchangeOrder
 from server.models.currency_pair import CurrencyPair
+from server.models.rate_alert import RateAlert
 from decimal import Decimal
 
 # Import models and services using absolute paths
@@ -174,10 +176,80 @@ def list_orders():
     return jsonify([o.to_dict() for o in orders]), 200
 
 
+# Create Alert
+@app.route("/api/alerts", methods=["POST"])
+@jwt_required()
+def create_alert():
+    data = request.get_json()
+    pair_id    = data.get("currency_pair_id")
+    target_raw = data.get("target_rate")
+    user_id    = get_jwt_identity()
+
+    if not pair_id or target_raw is None:
+        return jsonify({"message": "currency_pair_id and target_rate are required"}), 400
+
+    try:
+        target_rate = Decimal(str(target_raw))
+    except:
+        return jsonify({"message": "target_rate must be a number"}), 400
+
+    alert = RateAlert(
+      user_id          = user_id,
+      currency_pair_id = pair_id,
+      target_rate      = target_rate
+    )
+    db.session.add(alert)
+    db.session.commit()
+
+    return jsonify({
+      "id":               alert.id,
+      "currency_pair_id": alert.currency_pair_id,
+      "target_rate":      str(alert.target_rate),
+      "is_active":        alert.is_active
+    }), 201
+
+# List Alerts
+@app.route("/api/alerts", methods=["GET"])
+@jwt_required()
+def list_alerts():
+    user_id = get_jwt_identity()
+    alerts = RateAlert.query.filter_by(user_id=user_id).all()
+    return jsonify([
+      {
+        "id":               a.id,
+        "currency_pair_id": a.currency_pair_id,
+        "target_rate":      str(a.target_rate),
+        "is_active":        a.is_active
+      }
+      for a in alerts
+    ]), 200
+
+# Delete Alert
+@app.route("/api/alerts/<int:alert_id>", methods=["DELETE"])
+@jwt_required()
+def delete_alert(alert_id):
+    user_id = get_jwt_identity()
+    alert = RateAlert.query.get(alert_id)
+    if not alert or alert.user_id != user_id:
+        return jsonify({"message": "Alert not found"}), 404
+
+    db.session.delete(alert)
+    db.session.commit()
+    return '', 204
+    
+    
+
+
+
+
+
+
 # Health check
 @app.route("/api/health", methods=["GET"])
 def health_check():
     return jsonify({"status": "ok"}), 200
+
+
 
 if __name__ == "__main__":
     print(app.url_map)
