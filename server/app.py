@@ -16,6 +16,7 @@ from server.models.user import User
 from server.models.exchange_order import ExchangeOrder
 from server.models.currency_pair import CurrencyPair
 from server.models.rate_alert import RateAlert
+from server.models.faq import FAQ
 from decimal import Decimal
 
 # Import models and services using absolute paths
@@ -236,6 +237,21 @@ def delete_alert(alert_id):
     db.session.delete(alert)
     db.session.commit()
     return '', 204
+
+@app.route("/api/faqs", methods=["GET"])
+def list_faqs():
+    faqs = FAQ.query.all()
+    return jsonify([f.to_dict() for f in faqs]), 200
+
+@app.route("/api/faqs/<int:faq_id>", methods=["GET"])
+def get_faq(faq_id):
+    faq = FAQ.query.get(faq_id)
+    if not faq:
+        return jsonify({"message": "FAQ not found."}), 404
+    return jsonify(faq.to_dict()), 200
+
+
+
     
     
 

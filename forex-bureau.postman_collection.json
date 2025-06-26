@@ -181,9 +181,40 @@
         }
       },
       "response": []
+    },
+    {
+      "name": "List FAQs",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5555/api/faqs",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5555",
+          "path": ["api", "faqs"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get FAQ by ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5555/api/faqs/{{faqId}}",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5555",
+          "path": ["api", "faqs", "{{faqId}}"]
+        }
+      },
+      "response": []
     }
   ],
   "variable": [
-    { "key": "token", "value": "" }
+    { "key": "token", "value": "" },
+    { "key": "faqId", "value": "1" }
   ]
 }
