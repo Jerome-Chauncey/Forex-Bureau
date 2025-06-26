@@ -238,6 +238,45 @@ def delete_alert(alert_id):
     db.session.commit()
     return '', 204
 
+@app.route("/api/alerts/<int:alert_id>", methods=["PATCH"])
+@jwt_required()
+def update_alert(alert_id):
+    """Allow user to update target_rate and/or is_active on their own alert."""
+    data = request.get_json() or {}
+
+    # Pull out updatable fields
+    new_rate   = data.get("target_rate")
+    new_active = data.get("is_active")
+
+    if new_rate is None and new_active is None:
+        return jsonify({"message": "Nothing to update."}), 400
+
+    # Only let users touch their own alerts
+    user_id = get_jwt_identity()
+    alert = RateAlert.query.filter_by(id=alert_id, user_id=user_id).first()
+    if not alert:
+        return jsonify({"message": "Alert not found."}), 404
+
+    # Apply updates (with basic validation)
+    try:
+        if new_rate is not None:
+            amt = Decimal(str(new_rate))
+            if amt <= 0:
+                raise ValueError()
+            alert.target_rate = amt
+
+        if new_active is not None:
+            alert.is_active = bool(new_active)
+
+    except (ArithmeticError, ValueError):
+        return jsonify({"message": "Invalid update payload."}), 400
+
+    db.session.commit()
+    return jsonify(alert.to_dict()), 200
+
+    
+
+
 @app.route("/api/faqs", methods=["GET"])
 def list_faqs():
     faqs = FAQ.query.all()

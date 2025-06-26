@@ -183,6 +183,28 @@
       "response": []
     },
     {
+      "name": "Update Alert",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"target_rate\": \"1.1500\",\n  \"is_active\": false\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5555/api/alerts/1",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5555",
+          "path": ["api", "alerts", "1"]
+        }
+      },
+      "response": []
+    },
+    {
       "name": "List FAQs",
       "request": {
         "method": "GET",

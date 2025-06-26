@@ -8,3 +8,11 @@ class RateAlert(db.Model, SerializerMixin):
     currency_pair_id = db.Column(db.Integer, db.ForeignKey('currency_pairs.id'), nullable=False)
     target_rate      = db.Column(db.Numeric(18,6), nullable=False)
     is_active        = db.Column(db.Boolean, default=True, nullable=False)
+
+    serialize_rules = (
+        '-user.alerts', 
+        '-currency_pair.alerts',
+        '-currency_pair.orders',
+        '-user.orders',
+        '-user.kyc_docs'
+    )
