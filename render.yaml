@@ -1,4 +1,4 @@
-version: 1
+version: 2
 # Auto-deploy blueprint for Render: Postgres DB, Flask API, React UI
 
 databases:
