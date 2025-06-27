@@ -1,28 +1,29 @@
-# Forex Bureau Deployment for Render
+# Forex Bureau - Free Tier Deployment
 databases:
   - name: forex-bureau-db
-    region: oregon
+    region: oregon  # Most reliable free tier region
     plan: free
     databaseName: forex_bureau
     user: forex_user
 
 services:
-  # Backend API Service (Flask)
+  # Backend API (Flask/Python)
   - type: web
     name: forex-bureau-api
     env: python
     region: oregon
-    plan: starter
+    plan: free
+    instanceType: free  # Explicit free tier
     branch: main
     buildCommand: |
-      cd server && \
-      pip install --upgrade pip && \
-      pip install -r requirements.txt && \
-      alembic -c migrations/alembic.ini upgrade head && \
+      cd server &&
+      pip install --upgrade pip &&
+      pip install -r requirements.txt &&
+      alembic -c migrations/alembic.ini upgrade head &&
       python seed.py
     startCommand: |
-      cd server && \
-      PYTHONPATH=. gunicorn app:app
+      cd server &&
+      PYTHONPATH=. gunicorn --workers=1 --threads=4 app:app
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -33,21 +34,23 @@ services:
       - key: FLASK_ENV
         value: production
       - key: UPLOAD_FOLDER
-        value: /opt/render/project/src/server/uploads
+        value: ./server/uploads
 
-  # Frontend UI Service (React)
+  # Frontend UI (React/Node)
   - type: web
     name: forex-bureau-ui
     env: node
     region: oregon
     plan: free
+    instanceType: free  # Explicit free tier
     branch: main
     buildCommand: |
-      cd client && \
-      npm install
+      cd client &&
+      npm install &&
+      npm run build
     startCommand: |
-      cd client && \
-      npm run dev
+      cd client &&
+      npm run preview -- --port $PORT
     envVars:
       - key: VITE_API_BASE_URL
         value: https://forex-bureau-api.onrender.com
