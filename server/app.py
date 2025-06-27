@@ -290,6 +290,53 @@ def get_faq(faq_id):
     return jsonify(faq.to_dict()), 200
 
 
+@app.route("/api/users/me", methods=["GET"])
+@jwt_required()
+def get_current_user():
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"message": "User not found."}), 404
+
+    return jsonify({
+        "id":      user.id,
+        "email":   user.email,
+        "name":    user.name,
+        "phone":   user.phone,
+        "address": user.address,
+    }), 200
+
+@app.route("/api/users/me", methods=["PATCH"])
+@jwt_required()
+def update_current_user():
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"message": "User not found."}), 404
+
+    data = request.get_json() or {}
+    phone   = data.get("phone")
+    address = data.get("address")
+
+    if phone is None and address is None:
+        return jsonify({"message": "Nothing to update."}), 400
+
+    if phone is not None:
+        user.phone = phone
+    if address is not None:
+        user.address = address
+
+    db.session.commit()
+
+    return jsonify({
+        "id":      user.id,
+        "email":   user.email,
+        "name":    user.name,
+        "phone":   user.phone,
+        "address": user.address,
+    }), 200
+
+
 
     
     
