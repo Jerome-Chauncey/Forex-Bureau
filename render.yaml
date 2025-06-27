@@ -2,33 +2,33 @@
 # Auto-deploy configuration for Render: Postgres DB, Flask API, and React UI
 
 # 1) Managed Postgres database
----
+# A free Render Postgres instance for your app
+
 databases:
-  # A free Render Postgres instance for your app
-  - name: forex-bureau-db
-    region: oregon
-    plan: free
-    version: 16
-    databaseName: forex_bureau
-    user: forex_user
+  - name: forex-bureau-db         # service name
+    region: oregon                # choose same region as your services
+    plan: free                    # free tier
+    postgresVersion: 16           # Postgres version
+    databaseName: forex_bureau    # internal DB name
+    user: forex_user              # internal DB user
 
 # 2) Flask API Web Service
 services:
   - type: web
     name: forex-bureau-api
-    env: python         # Python runtime
-    region: oregon
-    plan: starter      # Free tier
-    branch: main       # Auto-deploy from main branch
-    rootDir: server    # cd into 'server/' before running commands
+    env: python                     # Python runtime
+    region: oregon                  # same region for private networking
+    plan: starter                   # free web service tier
+    branch: main                    # auto-deploy from `main`
+    rootDir: server                 # `cd server` before running commands
 
-    # Build: install dependencies, run migrations, seed data
+    # Build: install deps, run migrations, seed data
     buildCommand: |
       pip install --upgrade pip && pip install -r requirements.txt
       alembic -c migrations/alembic.ini upgrade head
       python seed.py
 
-    # Start: launch your Flask app via Gunicorn
+    # Start: launch Flask via Gunicorn
     startCommand: PYTHONPATH=. gunicorn server.app:app
 
     # Environment variables
@@ -44,20 +44,20 @@ services:
       - key: PYTHONPATH
         value: .
 
-# 3) React UI Static Site
+# 3) React Static Site for the frontend
 staticSites:
   - type: static
     name: forex-bureau-ui
-    region: oregon
-    plan: free
-    branch: main
-    rootDir: client   # cd into 'client/' directory
+    region: oregon                  # match region
+    plan: free                      # free static site tier
+    branch: main                    # auto-deploy from `main`
+    rootDir: client                 # `cd client` before building
 
-    # Build your Vite-powered React app
+    # Build and publish
     buildCommand: npm install && npm run build
-    publishDirectory: build  # serve files from client/build/
+    publishDirectory: build         # serve from client/build/
 
-    # Expose API base URL to your front-end
+    # API base URL for your frontend
     envVars:
       - key: VITE_API_BASE_URL
         value: https://forex-bureau-api.onrender.com
