@@ -9,7 +9,7 @@ databases:
     databaseName: forex_bureau
     user: forex_user
 
-# 2) Services: Flask API
+# 2) Flask API Web Service
 services:
   - type: web
     name: forex-bureau-api
@@ -18,17 +18,14 @@ services:
     plan: starter
     branch: main
     rootDir: server
-    
-    # Build: install deps, run migrations, seed data
+
     buildCommand: |
       pip install --upgrade pip && pip install -r requirements.txt
       alembic -c migrations/alembic.ini upgrade head
       python seed.py
 
-    # Start: launch Flask via Gunicorn
     startCommand: PYTHONPATH=. gunicorn server.app:app
 
-    # Environment variables
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -42,18 +39,16 @@ services:
         value: .
 
 # 3) React Static Site for Frontend
-staticSites:
+staticSite:
   - name: forex-bureau-ui
     region: oregon
     plan: free
     branch: main
     rootDir: client
-    
-    # Build and publish
+
     buildCommand: npm install && npm run build
     publishDirectory: build
 
-    # Environment variable for API
     envVars:
       - key: VITE_API_BASE_URL
         value: https://forex-bureau-api.onrender.com
