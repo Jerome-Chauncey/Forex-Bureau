@@ -2,26 +2,24 @@
 # Auto-deploy configuration for Render: Postgres DB, Flask API, and React UI
 
 # 1) Managed Postgres database
-# A free Render Postgres instance for your app
 databases:
-  - name: forex-bureau-db         # service name
-    region: oregon                # choose same region as your services
-    plan: free                    # free tier
-    databaseName: forex_bureau    # internal DB name
-    user: forex_user              # internal DB user
+  - name: forex-bureau-db
+    region: oregon
+    plan: free
+    databaseName: forex_bureau
+    user: forex_user
 
-# 2) Services: Flask API + React static
+# 2) Services: Flask API
 services:
-  # 2a) Flask API Web Service
   - type: web
     name: forex-bureau-api
-    env: python                     # Python runtime
-    region: oregon                  # private network region
-    plan: starter                   # free web service tier
-    branch: main                    # auto-deploy from `main`
-    rootDir: server                 # cd into 'server/' before commands
-
-    # Build: install deps, run migrations, seed
+    env: python
+    region: oregon
+    plan: starter
+    branch: main
+    rootDir: server
+    
+    # Build: install deps, run migrations, seed data
     buildCommand: |
       pip install --upgrade pip && pip install -r requirements.txt
       alembic -c migrations/alembic.ini upgrade head
@@ -43,19 +41,19 @@ services:
       - key: PYTHONPATH
         value: .
 
-  # 2b) React Static Site
-  - type: static
-    name: forex-bureau-ui
-    region: oregon                  # same region
-    plan: free                      # free static site tier
-    branch: main                    # auto-deploy from `main`
-    rootDir: client                 # cd into 'client/' before building
-
+# 3) React Static Site for Frontend
+staticSites:
+  - name: forex-bureau-ui
+    region: oregon
+    plan: free
+    branch: main
+    rootDir: client
+    
     # Build and publish
     buildCommand: npm install && npm run build
-    publishPath: build              # serve from client/build/
+    publishDirectory: build
 
-    # API base URL for front-end
+    # Environment variable for API
     envVars:
       - key: VITE_API_BASE_URL
         value: https://forex-bureau-api.onrender.com
