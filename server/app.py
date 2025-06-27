@@ -1,41 +1,60 @@
 import os
 from dotenv import load_dotenv
 
-# Load .env variables
 load_dotenv()
 
-from flask import jsonify, request, current_app
+from flask import Flask, jsonify, request, current_app
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
-# from flask_restful import Resource
+from flask_cors import CORS
+from decimal import Decimal
 
-# Import your factory and extensions
 from server.config import create_app, db
 from server.models.user import User
 from server.models.exchange_order import ExchangeOrder
 from server.models.currency_pair import CurrencyPair
 from server.models.rate_alert import RateAlert
 from server.models.faq import FAQ
-from decimal import Decimal
-
-# Import models and services using absolute paths
-from server.models.currency_pair import CurrencyPair
-from server.models.user          import User
 from server.models.kyc_document import KYCDocument
-from server.rates_service        import fetch_live_rates
-from server.utils                import allowed_file
+from server.rates_service import fetch_live_rates
+from server.utils import allowed_file
 
 # Create the Flask app
 app = create_app()
 
-@app.route("/api/signup", methods=["POST"])
+# Configure CORS
+CORS(app, resources={
+    r"/api/*": {
+        "origins": [
+            "https://forex-bureau-ui.onrender.com",
+            "http://localhost:3000"  # For local development
+        ],
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"],
+        "supports_credentials": True
+    }
+})
+
+@app.after_request
+def after_request(response):
+    """Add CORS headers to all responses"""
+    response.headers.add('Access-Control-Allow-Origin', 'https://forex-bureau-ui.onrender.com')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+    response.headers.add('Access-Control-Allow-Credentials', 'true')
+    return response
+
+@app.route("/api/signup", methods=["POST", "OPTIONS"])
 def signup():
-    email    = request.form.get("email")
+    if request.method == "OPTIONS":
+        return jsonify({}), 200
+
+    email = request.form.get("email")
     password = request.form.get("password")
-    name     = request.form.get("name")
-    phone    = request.form.get("phone")
-    address  = request.form.get("address")
+    name = request.form.get("name")
+    phone = request.form.get("phone")
+    address = request.form.get("address")
     kyc_file = request.files.get("kycDoc")
 
     if not all([email, password, name, phone, address, kyc_file]):
@@ -45,10 +64,10 @@ def signup():
     if User.query.filter_by(email=email).first():
         return jsonify({"message": "Email already registered."}), 409
 
-    filename   = secure_filename(kyc_file.filename)
+    filename = secure_filename(kyc_file.filename)
     upload_dir = current_app.config["UPLOAD_FOLDER"]
     os.makedirs(upload_dir, exist_ok=True)
-    filepath   = os.path.join(upload_dir, filename)
+    filepath = os.path.join(upload_dir, filename)
     kyc_file.save(filepath)
 
     hashed_pw = generate_password_hash(password)
@@ -60,7 +79,7 @@ def signup():
         address=address
     )
     db.session.add(user)
-    db.session.flush()  # user.id is now available
+    db.session.flush()
 
     doc = KYCDocument(
         user_id=user.id,
@@ -85,8 +104,8 @@ def get_rates():
             "id": p.id,
             "base_currency": p.base_currency,
             "quote_currency": p.quote_currency,
-            "buy_rate": round(float(p.buy_rate) * 0.995, 6),  # Customer buys at 0.5% discount
-            "sell_rate": round(float(p.sell_rate) * 1.005, 6), # Customer sells at 0.5% premium
+            "buy_rate": round(float(p.buy_rate) * 0.995, 6),
+            "sell_rate": round(float(p.sell_rate) * 1.005, 6),
             "updated_at": p.updated_at.isoformat()
         })
     return jsonify(result), 200
@@ -123,12 +142,10 @@ def create_order():
     if not all([pair_id, raw_amount, direction, delivery]):
         return jsonify({"message": "All fields are required."}), 400
 
-
-    #validate enums
     if direction not in ("buy", "sell"):
         return jsonify({"message": "direction must be 'buy' or 'sell'."}), 400
     if delivery not in ("branch_pickup", "bank_transfer"):
-        return jsonify ({"message": "delivery_method must be 'branch_pickup' or 'bank_transfer'."}), 400
+        return jsonify({"message": "delivery_method must be 'branch_pickup' or 'bank_transfer'."}), 400
 
     try:
         amount = Decimal(raw_amount)
@@ -141,21 +158,16 @@ def create_order():
     if not pair:
         return jsonify({"message": "CurrencyPair not found."}), 404 
 
-
-    #    For a buy order, user buys quote_currency, so use pair.sell_rate;
-    #    for sell order, user sells quote_currency, so use pair.buy_rate.
     executed_rate = pair.sell_rate if direction == "buy" else pair.buy_rate 
 
-    #create the order and save it
     order = ExchangeOrder(
-        user_id          = user_id,
-        currency_pair_id = pair_id,
-        amount           = amount,
-        direction        = direction,
-        delivery_method  = delivery,
-        rate_executed    = executed_rate,
-        status           = "pending"
-
+        user_id=user_id,
+        currency_pair_id=pair_id,
+        amount=amount,
+        direction=direction,
+        delivery_method=delivery,
+        rate_executed=executed_rate,
+        status="pending"
     )
     db.session.add(order)
     db.session.commit()
@@ -169,15 +181,13 @@ def list_orders():
     orders = ExchangeOrder.query.filter_by(user_id=user_id).order_by(ExchangeOrder.created_at.desc()).all()
     return jsonify([o.to_dict() for o in orders]), 200
 
-
-# Create Alert
 @app.route("/api/alerts", methods=["POST"])
 @jwt_required()
 def create_alert():
     data = request.get_json()
-    pair_id    = data.get("currency_pair_id")
+    pair_id = data.get("currency_pair_id")
     target_raw = data.get("target_rate")
-    user_id    = get_jwt_identity()
+    user_id = get_jwt_identity()
 
     if not pair_id or target_raw is None:
         return jsonify({"message": "currency_pair_id and target_rate are required"}), 400
@@ -188,37 +198,32 @@ def create_alert():
         return jsonify({"message": "target_rate must be a number"}), 400
 
     alert = RateAlert(
-      user_id          = user_id,
-      currency_pair_id = pair_id,
-      target_rate      = target_rate
+        user_id=user_id,
+        currency_pair_id=pair_id,
+        target_rate=target_rate
     )
     db.session.add(alert)
     db.session.commit()
 
     return jsonify({
-      "id":               alert.id,
-      "currency_pair_id": alert.currency_pair_id,
-      "target_rate":      str(alert.target_rate),
-      "is_active":        alert.is_active
+        "id": alert.id,
+        "currency_pair_id": alert.currency_pair_id,
+        "target_rate": str(alert.target_rate),
+        "is_active": alert.is_active
     }), 201
 
-# List Alerts
 @app.route("/api/alerts", methods=["GET"])
 @jwt_required()
 def list_alerts():
     user_id = get_jwt_identity()
     alerts = RateAlert.query.filter_by(user_id=user_id).all()
-    return jsonify([
-      {
-        "id":               a.id,
+    return jsonify([{
+        "id": a.id,
         "currency_pair_id": a.currency_pair_id,
-        "target_rate":      str(a.target_rate),
-        "is_active":        a.is_active
-      }
-      for a in alerts
-    ]), 200
+        "target_rate": str(a.target_rate),
+        "is_active": a.is_active
+    } for a in alerts]), 200
 
-# Delete Alert
 @app.route("/api/alerts/<int:alert_id>", methods=["DELETE"])
 @jwt_required()
 def delete_alert(alert_id):
@@ -234,23 +239,18 @@ def delete_alert(alert_id):
 @app.route("/api/alerts/<int:alert_id>", methods=["PATCH"])
 @jwt_required()
 def update_alert(alert_id):
-    """Allow user to update target_rate and/or is_active on their own alert."""
     data = request.get_json() or {}
-
-    # Pull out updatable fields
-    new_rate   = data.get("target_rate")
+    new_rate = data.get("target_rate")
     new_active = data.get("is_active")
 
     if new_rate is None and new_active is None:
         return jsonify({"message": "Nothing to update."}), 400
 
-    # Only let users touch their own alerts
     user_id = get_jwt_identity()
     alert = RateAlert.query.filter_by(id=alert_id, user_id=user_id).first()
     if not alert:
         return jsonify({"message": "Alert not found."}), 404
 
-    # Apply updates (with basic validation)
     try:
         if new_rate is not None:
             amt = Decimal(str(new_rate))
@@ -267,9 +267,6 @@ def update_alert(alert_id):
     db.session.commit()
     return jsonify(alert.to_dict()), 200
 
-    
-
-
 @app.route("/api/faqs", methods=["GET"])
 def list_faqs():
     faqs = FAQ.query.all()
@@ -282,7 +279,6 @@ def get_faq(faq_id):
         return jsonify({"message": "FAQ not found."}), 404
     return jsonify(faq.to_dict()), 200
 
-
 @app.route("/api/users/me", methods=["GET"])
 @jwt_required()
 def get_current_user():
@@ -292,10 +288,10 @@ def get_current_user():
         return jsonify({"message": "User not found."}), 404
 
     return jsonify({
-        "id":      user.id,
-        "email":   user.email,
-        "name":    user.name,
-        "phone":   user.phone,
+        "id": user.id,
+        "email": user.email,
+        "name": user.name,
+        "phone": user.phone,
         "address": user.address,
     }), 200
 
@@ -308,7 +304,7 @@ def update_current_user():
         return jsonify({"message": "User not found."}), 404
 
     data = request.get_json() or {}
-    phone   = data.get("phone")
+    phone = data.get("phone")
     address = data.get("address")
 
     if phone is None and address is None:
@@ -322,30 +318,16 @@ def update_current_user():
     db.session.commit()
 
     return jsonify({
-        "id":      user.id,
-        "email":   user.email,
-        "name":    user.name,
-        "phone":   user.phone,
+        "id": user.id,
+        "email": user.email,
+        "name": user.name,
+        "phone": user.phone,
         "address": user.address,
     }), 200
 
-
-
-    
-    
-
-
-
-
-
-
-# Health check
 @app.route("/api/health", methods=["GET"])
 def health_check():
     return jsonify({"status": "ok"}), 200
 
-
-
 if __name__ == "__main__":
-    print(app.url_map)
     app.run(host="0.0.0.0", port=5555, debug=True)
