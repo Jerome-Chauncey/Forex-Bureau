@@ -2,6 +2,7 @@
 import os
 from dotenv import load_dotenv
 load_dotenv()
+
 # Remote library imports
 from flask import Flask
 from flask_jwt_extended import JWTManager
@@ -11,13 +12,11 @@ from flask_restful import Api
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData
 
-
-
-# Instantiate extensions WITHOUT app (to avoid circular imports)
 db = SQLAlchemy()
 migrate = Migrate()
 jwt = JWTManager()
 api = Api()
+
 cors = CORS()
 
 def create_app():
@@ -35,21 +34,40 @@ def create_app():
     app.config['ALLOWED_EXTENSIONS'] = {'pdf', 'png', 'jpg', 'jpeg'}
     app.json.compact = False
 
-    # Configure metadata
+    # Configure CORS with specific settings
+    cors.init_app(app, resources={
+        r"/api/*": {
+            "origins": [
+                "https://forex-bureau-ui.onrender.com",
+                "http://localhost:3000"  # For local development
+            ],
+            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Authorization"],
+            "supports_credentials": True,
+            "expose_headers": ["Content-Type", "Authorization"]
+        }
+    })
+
     metadata = MetaData(naming_convention={
         "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
     })
 
-    # Initialize extensions with app
     db.init_app(app)
     migrate.init_app(app, db)
     jwt.init_app(app)
     api.init_app(app)
-    cors.init_app(app)
 
-    # Import models AFTER db initialization
+    # Add after_request handler for CORS headers
+    @app.after_request
+    def after_request(response):
+        response.headers.add('Access-Control-Allow-Origin', 'https://forex-bureau-ui.onrender.com')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+        response.headers.add('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+        response.headers.add('Access-Control-Allow-Credentials', 'true')
+        response.headers.add('Access-Control-Expose-Headers', 'Content-Type, Authorization')
+        return response
+
     with app.app_context():
-        # Import model files without bringing names to global scope
         import server.models.currency_pair
         import server.models.exchange_order
         import server.models.faq
@@ -59,5 +77,4 @@ def create_app():
 
     return app
 
-# Create app instance
 app = create_app()

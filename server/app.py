@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
 
+# Load .env variables
 load_dotenv()
 
 from flask import Flask, jsonify, request, current_app
@@ -10,6 +11,7 @@ from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identi
 from flask_cors import CORS
 from decimal import Decimal
 
+# Import your factory and extensions
 from server.config import create_app, db
 from server.models.user import User
 from server.models.exchange_order import ExchangeOrder
