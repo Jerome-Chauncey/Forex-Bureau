@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useContext } from 'react'
 import API from '../api'
 import { AuthContext } from '../contexts/AuthContext'
+import Footer from '../components/Footer'   
 
 export default function OrdersPage() {
   const { logout } = useContext(AuthContext)
@@ -53,6 +54,7 @@ export default function OrdersPage() {
           ))}
         </tbody>
       </table>
+      <Footer />
     </div>
   )
 }

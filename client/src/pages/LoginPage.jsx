@@ -1,6 +1,7 @@
 import React, { useState, useContext } from 'react'
 import { NavLink } from 'react-router-dom'
 import { AuthContext } from '../contexts/AuthContext'
+import Footer from '../components/Footer'
 
 export default function LoginPage() {
   const { login } = useContext(AuthContext)
@@ -37,6 +38,7 @@ export default function LoginPage() {
         <button type="submit" className="btn btn-primary btn-lg w-100">Log In</button>
       </form>
       <p className="mt-3 text-center">Don't have an account? <NavLink to="/signup">Sign up</NavLink>.</p>
+      <Footer />
     </div>
   )
 }

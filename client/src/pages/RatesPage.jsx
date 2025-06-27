@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import API from '../api'
+import Footer from '../components/Footer'
 
 export default function RatesPage() {
   const [rates, setRates] = useState([])
@@ -70,6 +71,7 @@ export default function RatesPage() {
           ))}
         </tbody>
       </table>
+      <Footer />
     </div>
   )
 }

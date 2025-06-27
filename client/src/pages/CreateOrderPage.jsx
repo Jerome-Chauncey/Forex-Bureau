@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import API from '../api'
+import Footer from '../components/Footer'
 
 export default function CreateOrderPage() {
   const [pairs, setPairs] = useState([])
@@ -105,6 +106,7 @@ export default function CreateOrderPage() {
           Create Order
         </button>
       </form>
+      <Footer />
     </div>
   )
 }

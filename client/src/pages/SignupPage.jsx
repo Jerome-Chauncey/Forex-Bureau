@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import API from '../api'  
+import Footer from '../components/Footer'
 
 export default function SignupPage() {
   const navigate = useNavigate()
@@ -96,6 +97,7 @@ export default function SignupPage() {
       <p className="mt-3">
         Already have an account? <Link to="/login">Log in here</Link>.
       </p>
+      <Footer />
     </div>
   )
 }

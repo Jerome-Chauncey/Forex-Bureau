@@ -1,5 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
+import Footer from '../components/Footer'
 
 export default function HomePage() {
   return (
@@ -7,21 +8,16 @@ export default function HomePage() {
       {/* Hero */}
       <div className="row align-items-center mb-5">
         <div className="col-md-6">
-          <h1 className="display-4">Welcome to Forex Bureau</h1>
+          <h1 className="display-4">Forex Bureau</h1>
           <p className="lead">
-            Get live exchange rates, place orders, set alerts and more—all in one place.
+            Get live exchange rates, place orders, set alerts and more. All in one place.
           </p>
-          <Link to="/signup" className="btn btn-primary btn-lg me-2">
-            Sign Up
-          </Link>
-          <Link to="/login" className="btn btn-outline-secondary btn-lg">
-            Log In
-          </Link>
+ 
         </div>
         <div className="col-md-6 text-center">
-          {/* Replace with your hero image */}
+          
           <img
-            src="/hero-image.png"
+            src="/hero.png"
             alt="Currency exchange"
             className="img-fluid"
           />
@@ -64,6 +60,10 @@ export default function HomePage() {
           </div>
         </div>
       </div>
+      <Footer />
+    
     </div>
+    
+      
   )
 }

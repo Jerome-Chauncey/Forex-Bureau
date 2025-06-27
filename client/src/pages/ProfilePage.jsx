@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react'
 import API from '../api'
 import { AuthContext } from '../contexts/AuthContext'
+import Footer from '../components/Footer'
 
 export default function ProfilePage() {
   const { logout } = useContext(AuthContext)
@@ -84,6 +85,7 @@ export default function ProfilePage() {
           Logout
         </button>
       </form>
+      <Footer />
     </div>
   )
 }
