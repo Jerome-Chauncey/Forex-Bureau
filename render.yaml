@@ -1,51 +1,46 @@
-version: 2
+version: 1
 # Auto-deploy blueprint for Render: Postgres DB, Flask API, React UI
 
 databases:
-  - name: forex-bureau-db
-    region: oregon
-    plan: free
-    databaseName: forex_bureau
-    user: forex_user
+- name: forex-bureau-db
+  region: oregon
+  plan: free
+  databaseName: forex_bureau
+  user: forex_user
 
 services:
-  - type: web
-    name: forex-bureau-api
-    env: python
-    region: oregon
-    plan: starter
-    branch: main
-    rootDir: server
+- type: web
+  name: forex-bureau-api
+  env: python
+  region: oregon
+  plan: starter
+  branch: main
+  rootDir: server
+  buildCommand: |
+    pip install --upgrade pip && pip install -r requirements.txt
+    alembic -x migrations/alembic.ini upgrade head
+    python seed.py
+  startCommand: PYTHONPATH=. gunicorn server.app:app
+  envVars:
+    - key: DATABASE_URL
+      fromDatabase:
+        name: forex-bureau-db
+        property: connectionString
+    - key: JWT_SECRET_KEY
+      value: "468afbd3d63be9eb0c2b5ed4c3e4485ec6cefb3bf7a8fe15f8b1b3278515c5"
+    - key: FLASK_ENV
+      value: production
+    - key: PYTHONPATH
+      value: .
 
-    buildCommand: |
-      pip install --upgrade pip && pip install -r requirements.txt
-      alembic -c migrations/alembic.ini upgrade head
-      python seed.py
-
-    startCommand: PYTHONPATH=. gunicorn server.app:app
-
-    envVars:
-      - key: DATABASE_URL
-        fromDatabase:
-          name: forex-bureau-db
-          property: connectionString
-      - key: JWT_SECRET_KEY
-        value: "460afb43de33e919e8b02b35ed4c3e4465ec8c0fb3b7a5fe15f861b3278515c5"
-      - key: FLASK_ENV
-        value: production
-      - key: PYTHONPATH
-        value: .
-
-staticSites:
-  - name: forex-bureau-ui
-    region: oregon
-    plan: free
-    branch: main
-    rootDir: client
-
-    buildCommand: npm install && npm run build
-    publishDirectory: build
-
-    envVars:
-      - key: VITE_API_BASE_URL
-        value: https://forex-bureau-api.onrender.com
+- type: web
+  name: forex-bureau-ui
+  region: oregon
+  plan: free
+  branch: main
+  rootDir: client
+  buildCommand: npm install && npm run build
+  publishDir: build
+  envVars:
+    - key: VITE_API_BASE_URL
+      value: https://forex-bureau-api.onrender.com
