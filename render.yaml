@@ -1,7 +1,7 @@
 # Forex Bureau - Free Tier Deployment
 databases:
   - name: forex-bureau-db
-    region: oregon  # Most reliable free tier region
+    region: oregon
     plan: free
     databaseName: forex_bureau
     user: forex_user
@@ -12,8 +12,7 @@ services:
     name: forex-bureau-api
     env: python
     region: oregon
-    plan: free
-    instanceType: free  # Explicit free tier
+    plan: free  # This is sufficient for free tier
     branch: main
     buildCommand: |
       cd server &&
@@ -30,7 +29,7 @@ services:
           name: forex-bureau-db
           property: connectionString
       - key: JWT_SECRET_KEY
-        value: "48eafb43dc33e91eebb92b35ed4c3e44f5ec6c9fb3b7a57e15fe51b3278515c5"
+        value: "dreamflasdc3septeebb2b3eadc3ed4f8ec6c9fb3b7a57ed5fb51b327853bc5"
       - key: FLASK_ENV
         value: production
       - key: UPLOAD_FOLDER
@@ -41,8 +40,7 @@ services:
     name: forex-bureau-ui
     env: node
     region: oregon
-    plan: free
-    instanceType: free  # Explicit free tier
+    plan: free  # This is sufficient for free tier
     branch: main
     buildCommand: |
       cd client &&
