@@ -1,0 +1,63 @@
+# render.yaml
+# Auto-deploy configuration for Render: Postgres DB, Flask API, and React UI
+
+# 1) Managed Postgres database
+---
+databases:
+  # A free Render Postgres instance for your app
+  - name: forex-bureau-db
+    region: oregon
+    plan: free
+    version: 16
+    databaseName: forex_bureau
+    user: forex_user
+
+# 2) Flask API Web Service
+services:
+  - type: web
+    name: forex-bureau-api
+    env: python         # Python runtime
+    region: oregon
+    plan: starter      # Free tier
+    branch: main       # Auto-deploy from main branch
+    rootDir: server    # cd into 'server/' before running commands
+
+    # Build: install dependencies, run migrations, seed data
+    buildCommand: |
+      pip install --upgrade pip && pip install -r requirements.txt
+      alembic -c migrations/alembic.ini upgrade head
+      python seed.py
+
+    # Start: launch your Flask app via Gunicorn
+    startCommand: PYTHONPATH=. gunicorn server.app:app
+
+    # Environment variables
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: forex-bureau-db
+          property: connectionString
+      - key: JWT_SECRET_KEY
+        value: "460afb43de33e919e8b02b35ed4c3e4465ec8c0fb3b7a5fe15f861b3278515c5"
+      - key: FLASK_ENV
+        value: production
+      - key: PYTHONPATH
+        value: .
+
+# 3) React UI Static Site
+staticSites:
+  - type: static
+    name: forex-bureau-ui
+    region: oregon
+    plan: free
+    branch: main
+    rootDir: client   # cd into 'client/' directory
+
+    # Build your Vite-powered React app
+    buildCommand: npm install && npm run build
+    publishDirectory: build  # serve files from client/build/
+
+    # Expose API base URL to your front-end
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: https://forex-bureau-api.onrender.com
