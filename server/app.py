@@ -78,24 +78,17 @@ def signup():
 
 @app.route("/api/rates", methods=["GET"])
 def get_rates():
-    pairs   = CurrencyPair.query.all()
-    symbols = list({p.quote_currency for p in pairs})
-    rates   = fetch_live_rates(symbols=symbols)
-
+    pairs = CurrencyPair.query.all()
     result = []
     for p in pairs:
-        rate = rates.get(p.quote_currency)
-        if rate is None:
-            continue
         result.append({
-            "id":            p.id,
+            "id": p.id,
             "base_currency": p.base_currency,
-            "quote_currency":p.quote_currency,
-            "buy_rate":      round(float(rate) * 0.995, 6),
-            "sell_rate":     round(float(rate) * 1.005, 6),
-            "updated_at":    p.updated_at.isoformat()
+            "quote_currency": p.quote_currency,
+            "buy_rate": round(float(p.buy_rate) * 0.995, 6),  # Customer buys at 0.5% discount
+            "sell_rate": round(float(p.sell_rate) * 1.005, 6), # Customer sells at 0.5% premium
+            "updated_at": p.updated_at.isoformat()
         })
-
     return jsonify(result), 200
 
 @app.route("/api/login", methods=["POST"])
