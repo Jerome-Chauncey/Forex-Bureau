@@ -1,6 +1,4 @@
-# Auto-deploy blueprint for Forex Bureau App with Postgres, Flask, and React
-# Using Render's supported version 1 specification
-
+# Forex Bureau Deployment for Render
 databases:
   - name: forex-bureau-db
     region: oregon
@@ -40,14 +38,18 @@ services:
   # Frontend UI Service (React)
   - type: web
     name: forex-bureau-ui
+    env: node
     region: oregon
     plan: free
     branch: main
     buildCommand: |
       cd client && \
-      npm install && \
-      npm run build
-    staticPublishPath: client/dist
+      npm install
+    startCommand: |
+      cd client && \
+      npm run dev
     envVars:
       - key: VITE_API_BASE_URL
         value: https://forex-bureau-api.onrender.com
+      - key: PORT
+        value: 3000
