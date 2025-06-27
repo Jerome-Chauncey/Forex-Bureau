@@ -1,7 +1,6 @@
-# render.yaml
-# Auto-deploy configuration for Render: Postgres DB, Flask API, and React UI
+version: 1
+# Auto-deploy blueprint for Render: Postgres DB, Flask API, React UI
 
-# 1) Managed Postgres database
 databases:
   - name: forex-bureau-db
     region: oregon
@@ -9,7 +8,6 @@ databases:
     databaseName: forex_bureau
     user: forex_user
 
-# 2) Flask API Web Service
 services:
   - type: web
     name: forex-bureau-api
@@ -38,8 +36,7 @@ services:
       - key: PYTHONPATH
         value: .
 
-# 3) React Static Site for Frontend
-staticSite:
+staticSites:
   - name: forex-bureau-ui
     region: oregon
     plan: free
