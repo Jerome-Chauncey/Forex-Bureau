@@ -27,7 +27,7 @@ services:
         name: forex-bureau-db
         property: connectionString
     - key: JWT_SECRET_KEY
-      value: "468afbd3d63be9eb0c2b5ed4c3e4485ec6cefb3bf7a8fe15f8b1b3278515c5"
+      value: "4G8afbd3d6s0e9ebbc2b5e44c3e4485ec6cefbbbf7a8feisfbb1b3278516c5"
     - key: FLASK_ENV
       value: production
     - key: PYTHONPATH
