@@ -1,47 +1,29 @@
-import os
+# server/rates_service.py
 import requests
-from typing import List, Dict, Optional  # Added necessary imports
+from typing import List, Dict, Optional
 
-API_KEY = os.getenv("EXCHANGE_RATE_API_KEY")
-BASE_URL = "https://data.fixer.io/api/"
+BASE_URL = "https://open.er-api.com/v6/latest"
 
 def fetch_live_rates(
     base: str = "EUR",
-    symbols: Optional[List[str]] = None  # Changed to List[str]
-) -> Dict[str, float]:  # Changed to Dict[str, float]
+    symbols: Optional[List[str]] = None
+) -> Dict[str, float]:
     """
-    Fetch live exchange rates from Fixer.io.
-    
-    Args:
-      base:       The base currency (Free plan only supports EUR)
-      symbols:    List of quote currencies to return (e.g. ["USD","KES"])
-    
-    Returns:
-      Mapping of currency code → rate relative to `base`.
+    Fetch live exchange rates from open.er-api.com (no API key needed).
     """
-    # Construct request URL & params
-    endpoint = BASE_URL + "latest"
-    params = {
-        "access_key": API_KEY,
-        "base": base,  # note: free plan defaults to EUR regardless of this param
-    }
-    if symbols:
-        params["symbols"] = ",".join(symbols)
-
-    # Make the HTTP request
-    resp = requests.get(endpoint, params=params, timeout=5)
+    # e.g. https://open.er-api.com/v6/latest/EUR
+    resp = requests.get(f"{BASE_URL}/{base}", timeout=5)
     resp.raise_for_status()
     data = resp.json()
 
-    # Ensure the API call succeeded
-    if not data.get("success", False):
-        error_info = data.get("error", {})
-        raise RuntimeError(f"Fixer API error: {error_info}")
+    # The API returns {"result":"success", "rates":{...}}
+    if data.get("result") != "success" or "rates" not in data:
+        raise RuntimeError(f"Error from exchange API: {data}")
 
-    # Return only the rates mapping
-    return data["rates"]
+    rates = data["rates"]  # all rates relative to `base`
 
-# Example usage:
-if __name__ == "__main__":
-    rates = fetch_live_rates(symbols=["USD", "KES", "GBP"])
-    print("Live rates:", rates)
+    # If the caller asked for specific symbols, filter down
+    if symbols:
+        rates = { cur: rates[cur] for cur in symbols if cur in rates }
+
+    return rates

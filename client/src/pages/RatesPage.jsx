@@ -7,32 +7,42 @@ export default function RatesPage() {
   const [error, setError] = useState(null)
   const [search, setSearch] = useState('')
 
-  useEffect(() => {
+  // Fetch rates from backend
+  const fetchRates = async () => {
     setLoading(true)
-    API.get('/api/rates')
-      .then(res => setRates(res.data))
-      .catch(err => {
-        console.error(err)
-        setError('Failed to load rates.')
-      })
-      .finally(() => setLoading(false))
+    setError(null)
+    try {
+      const res = await API.get('/api/rates')
+      setRates(res.data)
+    } catch (err) {
+      console.error(err)
+      setError('Failed to load rates.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchRates()
+    const interval = setInterval(fetchRates, 30000)
+    return () => clearInterval(interval)
   }, [])
 
-  const filtered = rates.filter(r => {
-    const pair = `${r.base_currency}/${r.quote_currency}`
-    return pair.toLowerCase().includes(search.toLowerCase())
-  })
+  if (loading) return <div className="container py-5">Loading rates…</div>
+  if (error) return <div className="container py-5 alert alert-danger">{error}</div>
 
-  if (loading) {
-    return <div className="container py-5">Loading rates…</div>
-  }
-  if (error) {
-    return <div className="container py-5 alert alert-danger">{error}</div>
-  }
+  const filtered = rates.filter(r =>
+    `${r.base_currency}/${r.quote_currency}`.toLowerCase().includes(search.toLowerCase())
+  )
 
   return (
     <div className="container py-5">
-      <h2 className="mb-4">Live Exchange Rates</h2>
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h2>Live Exchange Rates</h2>
+        <button className="btn btn-outline-secondary" onClick={fetchRates} disabled={loading}>
+          Refresh
+        </button>
+      </div>
       <input
         type="text"
         className="form-control mb-4"
@@ -44,9 +54,9 @@ export default function RatesPage() {
         <thead className="table-light">
           <tr>
             <th>Pair</th>
-            <th>Buy</th>
-            <th>Sell</th>
-            <th>Updated At</th>
+            <th>Buy Rate</th>
+            <th>Sell Rate</th>
+            <th>Last Updated</th>
           </tr>
         </thead>
         <tbody>
