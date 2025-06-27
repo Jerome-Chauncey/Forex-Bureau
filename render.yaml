@@ -1,5 +1,5 @@
 version: 2
-# Auto-deploy blueprint for Render: Postgres DB, Flask API, React UI
+# Auto-deploy blueprint for Forex Bureau App with Postgres, Flask, and React
 
 databases:
   - name: forex-bureau-db
@@ -9,6 +9,7 @@ databases:
     user: forex_user
 
 services:
+  # Backend API Service (Flask)
   - type: web
     name: forex-bureau-api
     env: python
@@ -17,10 +18,11 @@ services:
     branch: main
     rootDir: server
     buildCommand: |
-      pip install --upgrade pip && pip install -r requirements.txt
+      pip install --upgrade pip
+      pip install -r requirements.txt
       alembic -c migrations/alembic.ini upgrade head
       python seed.py
-    startCommand: PYTHONPATH=. gunicorn server.app:app
+    startCommand: PYTHONPATH=. gunicorn app:app
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -30,17 +32,20 @@ services:
         value: "48eafb43dc33e91eebb92b35ed4c3e44f5ec6c9fb3b7a57e15fe51b3278515c5"
       - key: FLASK_ENV
         value: production
-      - key: PYTHONPATH
-        value: .
+      - key: UPLOAD_FOLDER
+        value: /opt/render/project/src/server/uploads
 
+  # Frontend UI Service (React)
   - type: web
     name: forex-bureau-ui
     region: oregon
     plan: free
     branch: main
     rootDir: client
-    buildCommand: npm install && npm run build
-    publishDir: build
+    buildCommand: |
+      npm install
+      npm run build
+    staticPublishPath: ./dist
     envVars:
       - key: VITE_API_BASE_URL
         value: https://forex-bureau-api.onrender.com
