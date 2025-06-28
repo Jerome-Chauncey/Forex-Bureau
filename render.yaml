@@ -15,21 +15,22 @@ services:
     plan: free
     branch: main
     buildCommand: |
-      # 1. Install dependencies inside server/
-      cd server &&
+      # Install dependencies
       pip install --upgrade pip &&
-      pip install -r requirements.txt &&
-
-      # 2. Run migrations via Flask-Migrate (will pick up server/migrations/)
-      export FLASK_APP=app.py &&
+      pip install -r server/requirements.txt &&
+      
+      # Set up environment and run migrations
+      export FLASK_APP=server/app.py &&
+      export PYTHONPATH=$PYTHONPATH:$PWD &&
+      cd server &&
       flask db upgrade &&
-
-      # 3. Seed the database
+      
+      # Seed the database
       python seed.py
     startCommand: |
-      # Launch production server with Gunicorn
+      export PYTHONPATH=$PYTHONPATH:$PWD &&
       cd server &&
-      PYTHONPATH=. gunicorn --bind 0.0.0.0:$PORT --workers=1 --threads=4 app:app
+      gunicorn --bind 0.0.0.0:$PORT --workers=1 --threads=4 app:app
     envVars:
       - key: DATABASE_URL
         fromDatabase:
