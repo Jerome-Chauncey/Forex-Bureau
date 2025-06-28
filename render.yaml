@@ -12,15 +12,21 @@ services:
     name: forex-bureau-api
     env: python
     region: oregon
-    plan: free  # This is sufficient for free tier
+    plan: free
     branch: main
     buildCommand: |
-      cd server &&
+      # 1. Install dependencies from the project root
       pip install --upgrade pip &&
-      pip install -r requirements.txt &&
-      alembic -c migrations/alembic.ini upgrade head &&
-      python seed.py
+      pip install -r server/requirements.txt &&
+
+      # 2. Run database migrations
+      export FLASK_APP=server/app.py &&
+      flask db upgrade &&
+
+      # 3. Seed the database
+      python server/seed.py
     startCommand: |
+      # Launch production server via Gunicorn
       cd server &&
       PYTHONPATH=. gunicorn --bind 0.0.0.0:$PORT --workers=1 --threads=4 app:app
     envVars:
@@ -40,7 +46,7 @@ services:
     name: forex-bureau-ui
     env: node
     region: oregon
-    plan: free  # This is sufficient for free tier
+    plan: free
     branch: main
     buildCommand: |
       cd client &&
