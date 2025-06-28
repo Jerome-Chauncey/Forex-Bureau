@@ -43,6 +43,18 @@ export default function CreateOrderPage() {
     }
   }
 
+  const selected = pairs.find(p => p.id === Number(form.currency_pair_id))
+
+  const rate = selected
+  ? form.direction === 'buy'
+    ? Number(selected.sell_rate)
+    : Number(selected.buy_rate)
+    : 0
+
+  const total = form.amount && rate
+    ? (Number(form.amount) * rate).toFixed(6)
+    : ''
+
   return (
     <div className="container py-5">
       <h2 className="mb-4">Create Order</h2>
@@ -102,6 +114,14 @@ export default function CreateOrderPage() {
             <option value="bank_transfer">Bank Transfer</option>
           </select>
         </div>
+        {selected && form.amount && (
+          <div className="mb-4 alert alert-secondary">
+            <strong>
+              You will {form.direction === 'buy' ? 'pay' : 'receive'}&nbsp;
+              {total} {selected.quote_currency}
+            </strong>
+          </div>
+        )}
         <button type="submit" className="btn btn-primary w-100">
           Create Order
         </button>
