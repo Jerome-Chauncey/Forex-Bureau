@@ -41,7 +41,7 @@ def create_app():
                 "https://forex-bureau-ui.onrender.com",
                 "http://localhost:3000"  # For local development
             ],
-            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            "methods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
             "allow_headers": ["Content-Type", "Authorization"],
             "supports_credentials": True,
             "expose_headers": ["Content-Type", "Authorization"]
