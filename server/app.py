@@ -100,17 +100,17 @@ def login():
 @app.route("/api/rates", methods=["GET"])
 def get_rates():
     pairs = CurrencyPair.query.all()
-    result = []
-    for p in pairs:
-        result.append({
-            "id": p.id,
-            "base_currency": p.base_currency,
+    return jsonify([
+        {
+            "id":             p.id,
+            "base_currency":  p.base_currency,
             "quote_currency": p.quote_currency,
-            "buy_rate": round(float(p.buy_rate) * 0.995, 6),
-            "sell_rate": round(float(p.sell_rate) * 1.005, 6),
-            "updated_at": p.updated_at.isoformat()
-        })
-    return jsonify(result), 200
+            "buy_rate":       float(p.buy_rate),   
+            "sell_rate":      float(p.sell_rate),
+            "updated_at":     p.updated_at.isoformat()
+        }
+        for p in pairs
+    ]), 200
 
 @app.route("/api/orders", methods=["POST"])
 @jwt_required()
@@ -140,7 +140,11 @@ def create_order():
     if not pair:
         return jsonify({"message": "CurrencyPair not found."}), 404
 
-    executed_rate = pair.sell_rate if direction == "buy" else pair.buy_rate
+    if direction == "buy":
+        executed_rate = pair.sell_rate    
+    else:
+        executed_rate = pair.buy_rate  
+
     order = ExchangeOrder(
         user_id=user_id,
         currency_pair_id=pair_id,

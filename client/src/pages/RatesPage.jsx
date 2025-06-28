@@ -64,8 +64,8 @@ export default function RatesPage() {
           {filtered.map(r => (
             <tr key={r.id}>
               <td>{r.base_currency}/{r.quote_currency}</td>
-              <td>{r.buy_rate}</td>
-              <td>{r.sell_rate}</td>
+              <td>{Number(r.buy_rate).toFixed(6)}</td>
+              <td>{Number(r.sell_rate).toFixed(6)}</td>
               <td>{new Date(r.updated_at).toLocaleString()}</td>
             </tr>
           ))}

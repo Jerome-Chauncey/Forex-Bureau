@@ -1,4 +1,3 @@
-````markdown
 # Forex Bureau Full-Stack Application
 
 A modern online Forex bureau web application that allows users to sign up, upload KYC documents, view live currency rates, place and track exchange orders, manage rate alerts, and browse FAQs. This README covers project overview, setup, migrations, running server and client, and deployment configuration.
@@ -11,7 +10,7 @@ A modern online Forex bureau web application that allows users to sign up, uploa
 
 **Primary Users:** Customers who want to sign up, exchange currency, and track orders.
 
-**Core MVP Features:**
+**Core Features:**
 
 - User signup/login with KYC document upload
 - View live buy/sell exchange rates
@@ -37,7 +36,7 @@ A modern online Forex bureau web application that allows users to sign up, uploa
 - Authentication: JWT via `flask-jwt-extended`
 - Database: PostgreSQL, SQLAlchemy, Alembic
 - File uploads: Werkzeug
-- Environment variables: `DATABASE_URL`, `FLASK_SECRET_KEY`, `JWT_SECRET_KEY`
+- Environment variables: `DATABASE_URL`, `FLASK_SECRET_KEY`, `JWT_SECRET_KEY`, `UPLOAD_FOLDER`
 
 **Frontend:**
 
@@ -46,13 +45,13 @@ A modern online Forex bureau web application that allows users to sign up, uploa
 - Bootstrap for styling (replaced Tailwind CSS)
 - HTTP client: Axios or Fetch with localStorage for token persistence
 - Auth context for JWT stored in localStorage
-- Environment variable: `REACT_APP_API_URL` (or `VITE_API_BASE_URL`)
+- Environment variable: `VITE_API_BASE_URL` (or `REACT_APP_API_URL`)
 
 ---
 
 ## Prerequisites
 
-- Node.js (v16+ for other versions, but see NVM instructions below for v20.19)
+- Node.js (v16+)
 - npm (v8+)
 - Python (3.10+)
 - PostgreSQL database (local or remote)
@@ -66,7 +65,7 @@ Before running the frontend, ensure you have Node.js **v20.19.0** installed via 
 # Install and switch to Node 20.19
 nvm install 20.19
 nvm use 20.19
-````
+```
 
 ---
 
@@ -98,6 +97,7 @@ nvm use 20.19
    DATABASE_URL=postgresql://<user>:<password>@<host>:5432/forex_bureau
    FLASK_SECRET_KEY=<your_flask_secret>
    JWT_SECRET_KEY=<your_jwt_secret>
+   UPLOAD_FOLDER=./uploads
    ```
 
 ### Frontend
@@ -127,7 +127,6 @@ nvm use 20.19
    ```bash
    pipenv shell
    ```
-
 2. **Initialize & upgrade database**
 
    ```bash
@@ -137,11 +136,9 @@ nvm use 20.19
    flask db migrate -m "initial schema"
    flask db upgrade
    ```
-
 3. **Seed the database**
 
    ```bash
-   # ensure server package is on PYTHONPATH
    PYTHONPATH=. python server/seed.py
    ```
 
@@ -161,7 +158,7 @@ The API will be available at `http://localhost:5555/api/`.
 
 ### Client (Frontend)
 
-From the `client/` directory (after installing and activating NVM v20.19):
+From the `client/` directory:
 
 ```bash
 npm run dev
@@ -173,7 +170,7 @@ The React app will run at `http://localhost:3000` by default.
 
 ## API Reference
 
-See [API Documentation](./forex-bureau.postman_collection.json) or the table below:
+See [API Documentation](./forex-bureau.postman_collection.json) or use the table below:
 
 | Method | Endpoint          | Auth? | Description                             |
 | ------ | ----------------- | ----- | --------------------------------------- |
@@ -201,18 +198,38 @@ Use the following `render.yaml` in the repo root for automated free‑tier deplo
 
 ```yaml
 # Forex Bureau - Free Tier Deployment
-# … (see provided render.yaml snippet above) …
+services:
+  - type: web
+    name: forex-bureau-server
+    env: python
+    plan: free
+    buildCommand: pipenv install && pipenv run flask db upgrade && pipenv run python server/seed.py
+    startCommand: pipenv run gunicorn server.app:app
+    envVars:
+      - key: DATABASE_URL
+      - key: FLASK_SECRET_KEY
+      - key: JWT_SECRET_KEY
+      - key: UPLOAD_FOLDER
+  - type: web
+    name: forex-bureau-client
+    env: node
+    plan: free
+    buildCommand: |
+      nvm install 20.19
+      nvm use 20.19
+      npm install
+      npm run build
+    startCommand: npm run serve
+    envVars:
+      - key: VITE_API_BASE_URL
 ```
 
 Key notes:
 
-* The `buildCommand` installs dependencies, runs migrations (`flask db upgrade`), and seeds the DB.
-* The `startCommand` launches Gunicorn on the specified `$PORT`.
-* Ensure your `UPLOAD_FOLDER` env var points to `./uploads` under `server/`.
+- The `buildCommand` installs dependencies, runs migrations (`flask db upgrade`), and seeds the DB.
+- The `startCommand` launches Gunicorn on the specified `$PORT`.
+- Ensure your `UPLOAD_FOLDER` env var points to `./uploads` under `server/`.
 
 ---
 
 Happy coding! 🚀
-
-```
-```
