@@ -10,64 +10,71 @@ export default function NavBar() {
         <NavLink className="navbar-brand" to="/">
           Forex Bureau
         </NavLink>
-        <button
-          className="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
-        >
-          <span className="navbar-toggler-icon" />
-        </button>
-        <div className="collapse navbar-collapse" id="navbarNav">
-          <div className="collapse navbar-collapse" id="navbarNav">
-            {token && (
-              <ul className="navbar-nav me-auto">
-                <li className="nav-item">
-                  <NavLink to="/rates" className="nav-link">
-                    Rates
-                  </NavLink>
-                </li>
-                <li className="nav-item">
-                  <NavLink to="/create-order" className="nav-link">
-                    Create Order
-                  </NavLink>
-                </li>
-                <li className="nav-item">
-                  <NavLink to="/orders" className="nav-link">
-                    Orders
-                  </NavLink>
-                </li>
-                <li className="nav-item">
-                  <NavLink to="/alerts" className="nav-link">
-                    Alerts
-                  </NavLink>
-                </li>
-                <li className="nav-item">
-                  <NavLink to="/profile" className="nav-link">
-                    Profile
-                  </NavLink>
-                </li>
-              </ul>
-            )}
-          </div>
 
-          {/* Auth buttons (always visible) */}
-          <div className="d-flex">
-            {token ? (
-              <button onClick={logout} className="btn btn-outline-secondary">
-                Logout
-              </button>
-            ) : (
-              <>
-                <NavLink to="/login" className="btn btn-outline-primary me-2">
-                  Log In
+        {token && (
+          <button
+            className="navbar-toggler ms-auto me-2"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarNav"
+            aria-controls="navbarNav"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+          >
+            <span className="navbar-toggler-icon" />
+          </button>
+        )}
+
+        <div
+          className={`collapse navbar-collapse${token ? "" : " show"}`}
+          id="navbarNav"
+        >
+          {token && (
+            <ul className="navbar-nav me-auto">
+              <li className="nav-item">
+                <NavLink to="/rates" className="nav-link">
+                  Rates
                 </NavLink>
-                <NavLink to="/signup" className="btn btn-primary">
-                  Sign Up
+              </li>
+              <li className="nav-item">
+                <NavLink to="/create-order" className="nav-link">
+                  Create Order
                 </NavLink>
-              </>
-            )}
-          </div>
+              </li>
+              <li className="nav-item">
+                <NavLink to="/orders" className="nav-link">
+                  Orders
+                </NavLink>
+              </li>
+              <li className="nav-item">
+                <NavLink to="/alerts" className="nav-link">
+                  Alerts
+                </NavLink>
+              </li>
+              <li className="nav-item">
+                <NavLink to="/profile" className="nav-link">
+                  Profile
+                </NavLink>
+              </li>
+            </ul>
+          )}
+        </div>
+
+        <div className="d-flex">
+          {token ? (
+            <button onClick={logout} className="btn btn-outline-secondary">
+              Logout
+            </button>
+          ) : (
+            <>
+              <NavLink to="/login" className="btn btn-outline-primary me-2">
+                Log In
+              </NavLink>
+              <NavLink to="/signup" className="btn btn-primary">
+                Sign Up
+              </NavLink>
+            </>
+          )}
         </div>
       </div>
     </nav>
