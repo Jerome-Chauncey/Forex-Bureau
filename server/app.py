@@ -32,7 +32,8 @@ CORS(app, resources={
         "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         "allow_headers": ["Content-Type", "Authorization"],
         "supports_credentials": True,
-        "expose_headers": ["Content-Type", "Authorization"]
+        "expose_headers": ["Content-Type", "Authorization"],
+        "max_age": 86400
     }
 })
 
@@ -41,8 +42,9 @@ def after_request(response):
     """Add CORS headers to every response"""
     response.headers.add('Access-Control-Allow-Origin', 'https://forex-bureau-ui.onrender.com')
     response.headers.add('Access-Control-Allow-Credentials', 'true')
-    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+    response.headers.add('Access-Control-Max-Age', '86400')
     return response
 
 @app.route("/api/signup", methods=["POST", "OPTIONS"])
@@ -110,9 +112,15 @@ def get_rates():
         })
     return jsonify(result), 200
 
-@app.route("/api/login", methods=["POST"])
+@app.route("/api/login", methods=["POST", "OPTIONS"])
 def login():
+    if request.method == "OPTIONS":
+        return jsonify({}), 200
+        
     data = request.get_json()
+    if not data:
+        return jsonify({"message": "Missing JSON in request"}), 400
+        
     email = data.get("email")
     password = data.get("password")
 
