@@ -15,19 +15,19 @@ services:
     plan: free
     branch: main
     buildCommand: |
-      # 1. Install Python dependencies
+      # 1. Install dependencies inside server/
       cd server &&
       pip install --upgrade pip &&
       pip install -r requirements.txt &&
 
-      # 2. Run migrations via Flask-Migrate (uses server/migrations)
+      # 2. Run migrations via Flask-Migrate (will pick up server/migrations/)
       export FLASK_APP=app.py &&
       flask db upgrade &&
 
       # 3. Seed the database
       python seed.py
     startCommand: |
-      # Launch under Gunicorn
+      # Launch production server with Gunicorn
       cd server &&
       PYTHONPATH=. gunicorn --bind 0.0.0.0:$PORT --workers=1 --threads=4 app:app
     envVars:
@@ -40,7 +40,7 @@ services:
       - key: FLASK_ENV
         value: production
       - key: UPLOAD_FOLDER
-        value: ./uploads   # relative to server/, matches what your code expects
+        value: ./uploads
 
   # Frontend UI (React/Node)
   - type: web
