@@ -15,8 +15,9 @@ services:
     plan: free
     branch: main
     buildCommand: |
-      # Install dependencies
+      # Install dependencies including gunicorn
       pip install --upgrade pip &&
+      pip install gunicorn &&
       pip install -r server/requirements.txt &&
       
       # Set up environment and run migrations
@@ -30,7 +31,7 @@ services:
     startCommand: |
       export PYTHONPATH=$PYTHONPATH:$PWD &&
       cd server &&
-      python -m gunicorn --bind 0.0.0.0:$PORT --workers=1 --threads=4 app:app
+      gunicorn --bind 0.0.0.0:$PORT --workers=1 --threads=4 app:app
     envVars:
       - key: DATABASE_URL
         fromDatabase:
