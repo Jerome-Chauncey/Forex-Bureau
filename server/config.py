@@ -57,15 +57,7 @@ def create_app():
     jwt.init_app(app)
     api.init_app(app)
 
-    # Add after_request handler for CORS headers
-    @app.after_request
-    def after_request(response):
-        response.headers.add('Access-Control-Allow-Origin', 'https://forex-bureau-ui.onrender.com')
-        response.headers.add('Access-Control-Allow-Headers', 'Content-Type, Authorization')
-        response.headers.add('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-        response.headers.add('Access-Control-Allow-Credentials', 'true')
-        response.headers.add('Access-Control-Expose-Headers', 'Content-Type, Authorization')
-        return response
+
 
     with app.app_context():
         import server.models.currency_pair
