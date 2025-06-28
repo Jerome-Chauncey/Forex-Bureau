@@ -15,11 +15,11 @@ services:
     plan: free  # This is sufficient for free tier
     branch: main
     buildCommand: |
+      cd server &&
       pip install --upgrade pip &&
-      pip install -r server/requirements.txt &&
-      export FLASK_APP=server/app.py &&
-      flask db upgrade &&
-      python server/seed.py
+      pip install -r requirements.txt &&
+      alembic -c migrations/alembic.ini upgrade head &&
+      python seed.py
     startCommand: |
       cd server &&
       PYTHONPATH=. gunicorn --bind 0.0.0.0:$PORT --workers=1 --threads=4 app:app
