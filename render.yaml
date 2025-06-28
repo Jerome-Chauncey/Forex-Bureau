@@ -15,7 +15,6 @@ services:
     plan: free  # This is sufficient for free tier
     branch: main
     buildCommand: |
-      cd server &&
       pip install --upgrade pip &&
       pip install -r requirements.txt &&
       export FLASK_APP=app.py &&
