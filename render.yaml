@@ -30,7 +30,7 @@ services:
     startCommand: |
       export PYTHONPATH=$PYTHONPATH:$PWD &&
       cd server &&
-      gunicorn --bind 0.0.0.0:$PORT --workers=1 --threads=4 app:app
+      python -m gunicorn --bind 0.0.0.0:$PORT --workers=1 --threads=4 app:app
     envVars:
       - key: DATABASE_URL
         fromDatabase:
