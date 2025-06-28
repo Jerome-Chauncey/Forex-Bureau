@@ -1,8 +1,7 @@
+````markdown
 # Forex Bureau Full-Stack Application
 
 A modern online Forex bureau web application that allows users to sign up, upload KYC documents, view live currency rates, place and track exchange orders, manage rate alerts, and browse FAQs. This README covers project overview, setup, migrations, running server and client, and deployment configuration.
-
----
 
 ---
 
@@ -14,16 +13,16 @@ A modern online Forex bureau web application that allows users to sign up, uploa
 
 **Core MVP Features:**
 
-* User signup/login with KYC document upload
-* View live buy/sell exchange rates
-* Place exchange orders (e.g., USD⇄KES)
-* View order history (pending and past)
+- User signup/login with KYC document upload
+- View live buy/sell exchange rates
+- Place exchange orders (e.g., USD⇄KES)
+- View order history (pending and past)
 
 **Stretch Features:**
 
-* Rate-threshold alerts
-* Profile settings page
-* FAQ integration
+- Rate-threshold alerts
+- Profile settings page
+- FAQ integration
 
 **Timeline:** June 24–27, 2025
 
@@ -33,31 +32,41 @@ A modern online Forex bureau web application that allows users to sign up, uploa
 
 **Backend:**
 
-* Python 3.10+
-* Flask, Flask-RESTful, Flask-CORS, Flask-Migrate
-* Authentication: JWT via `flask-jwt-extended`
-* Database: PostgreSQL, SQLAlchemy, Alembic
-* File uploads: Werkzeug
-* Environment variables: `DATABASE_URL`, `FLASK_SECRET_KEY`, `JWT_SECRET_KEY`
+- Python 3.10+
+- Flask, Flask-RESTful, Flask-CORS, Flask-Migrate
+- Authentication: JWT via `flask-jwt-extended`
+- Database: PostgreSQL, SQLAlchemy, Alembic
+- File uploads: Werkzeug
+- Environment variables: `DATABASE_URL`, `FLASK_SECRET_KEY`, `JWT_SECRET_KEY`
 
 **Frontend:**
 
-* React 18+, React Router DOM
-* Formik + Yup for forms & validation
-* Bootstrap for styling (replaced Tailwind CSS)
-* HTTP client: Axios or Fetch with localStorage for token persistence
-* Auth context for JWT stored in localStorage
-* Environment variable: `REACT_APP_API_URL` (or `VITE_API_BASE_URL`)
+- React 18+, React Router DOM
+- Formik + Yup for forms & validation
+- Bootstrap for styling (replaced Tailwind CSS)
+- HTTP client: Axios or Fetch with localStorage for token persistence
+- Auth context for JWT stored in localStorage
+- Environment variable: `REACT_APP_API_URL` (or `VITE_API_BASE_URL`)
 
 ---
 
 ## Prerequisites
 
-* Node.js (v16+)
-* npm (v8+)
-* Python (3.10+)
-* PostgreSQL database (local or remote)
-* `virtualenv` or `venv` for Python
+- Node.js (v16+ for other versions, but see NVM instructions below for v20.19)
+- npm (v8+)
+- Python (3.10+)
+- PostgreSQL database (local or remote)
+- `virtualenv` or `venv` for Python
+
+### NVM & Node.js
+
+Before running the frontend, ensure you have Node.js **v20.19.0** installed via NVM:
+
+```bash
+# Install and switch to Node 20.19
+nvm install 20.19
+nvm use 20.19
+````
 
 ---
 
@@ -77,18 +86,13 @@ A modern online Forex bureau web application that allows users to sign up, uploa
    pipenv shell
    pipenv install
    ```
-3. **Create and activate virtual environment (via Pipenv)**
-
-   ```bash
-   pipenv shell
-   ```
-4. **Install Python dependencies**
+3. **Install Python dependencies**
 
    ```bash
    pip install --upgrade pip
    pip install -r server/requirements.txt
    ```
-5. **Create `.env` file** in project root or `server/` with:
+4. **Create `.env` file** in project root or `server/` with:
 
    ```dotenv
    DATABASE_URL=postgresql://<user>:<password>@<host>:5432/forex_bureau
@@ -157,7 +161,7 @@ The API will be available at `http://localhost:5555/api/`.
 
 ### Client (Frontend)
 
-From the `client/` directory:
+From the `client/` directory (after installing and activating NVM v20.19):
 
 ```bash
 npm run dev
@@ -209,3 +213,6 @@ Key notes:
 ---
 
 Happy coding! 🚀
+
+```
+```
