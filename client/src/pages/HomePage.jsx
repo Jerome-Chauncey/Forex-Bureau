@@ -1,6 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import Footer from '../components/Footer'
+import CurrencyConverter from '../components/CurrencyConverter'
 
 export default function HomePage() {
   return (
@@ -12,6 +13,7 @@ export default function HomePage() {
           <p className="lead">
             Get live exchange rates, place orders, set alerts and more. All in one place.
           </p>
+          <CurrencyConverter />
  
         </div>
         <div className="col-md-6 text-center">
