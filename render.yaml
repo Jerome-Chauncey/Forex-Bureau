@@ -18,7 +18,7 @@ services:
       cd server &&
       pip install --upgrade pip &&
       pip install -r requirements.txt &&
-      alembic -c ../migrations/alembic.ini upgrade head &&
+      alembic -c migrations/alembic.ini upgrade head &&
       python seed.py
     startCommand: |
       cd server &&
