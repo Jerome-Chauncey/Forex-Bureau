@@ -136,7 +136,7 @@ export default function AlertsPage() {
           </div>
         </form>
 
-        {/* 🔔 Alerts Table */}
+        {/*  Alerts Table */}
         <table className="table table-striped">
           <thead className="table-light">
             <tr>
@@ -209,7 +209,7 @@ export default function AlertsPage() {
         </table>
       </div>
 
-      {/* sticky footer */}
+
       <Footer />
     </div>
   )
