@@ -8,7 +8,7 @@ export default function NavBar() {
     <nav className="navbar navbar-expand-lg navbar-light bg-white shadow-sm mb-4">
       <div className="container">
         <NavLink className="navbar-brand" to="/">
-          Forex Bureau
+          <img src="/Forex_bureau_logo.png" alt="fb logo" width="100" height="auto" />
         </NavLink>
 
         {token && (
